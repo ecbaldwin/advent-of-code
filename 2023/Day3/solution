@@ -1,0 +1,39 @@
+#!/usr/bin/python3
+
+import re
+import sys
+
+symbolRe = re.compile("[^.0-9]")
+numberRe = re.compile("[0-9]+")
+
+symbols = []
+with open(sys.argv[1], 'r') as file:
+    lineno = 0
+    for line in file.readlines():
+        line = line.strip()
+        for match in symbolRe.finditer(line):
+            pos = (lineno, match.span()[0])
+            symbols.append(pos)
+        lineno += 1
+
+total = 0
+with open(sys.argv[1], 'r') as file:
+    lineno = 0
+    for line in file.readlines():
+        line = line.strip()
+        for match in numberRe.finditer(line):
+            # define the box
+            top = lineno-1
+            left = match.start()-1
+            bottom = lineno+1
+            right = match.end()
+
+            for symbol in symbols:
+                if top <= symbol[0] and symbol[0] <= bottom and left <= symbol[1] and symbol[1] <= right:
+                    number = int(match.group())
+                    total += number
+                    break;
+
+        lineno += 1
+
+    print(total)
