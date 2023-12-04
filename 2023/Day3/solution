@@ -1,20 +1,17 @@
 #!/usr/bin/python3
 
+print("CREATE VIRTUAL TABLE gear_index USING rtree(")
+print("    id,")
+print("    minX, maxX,")
+print("    minY, maxY,")
+print("    +number,")
+print(");")
+
 import re
 import sys
 
-symbolRe = re.compile("[^.0-9]")
+symbolRe = re.compile("[*]")
 numberRe = re.compile("[0-9]+")
-
-symbols = []
-with open(sys.argv[1], 'r') as file:
-    lineno = 0
-    for line in file.readlines():
-        line = line.strip()
-        for match in symbolRe.finditer(line):
-            pos = (lineno, match.span()[0])
-            symbols.append(pos)
-        lineno += 1
 
 total = 0
 with open(sys.argv[1], 'r') as file:
@@ -28,12 +25,17 @@ with open(sys.argv[1], 'r') as file:
             bottom = lineno+1
             right = match.end()
 
-            for symbol in symbols:
-                if top <= symbol[0] and symbol[0] <= bottom and left <= symbol[1] and symbol[1] <= right:
-                    number = int(match.group())
-                    total += number
-                    break;
+            number = int(match.group())
+            print("INSERT INTO gear_index VALUES(NULL, %d, %d, %d, %d, %d);" % (top, bottom, left, right, number))
 
         lineno += 1
 
-    print(total)
+print(".mode json")
+with open(sys.argv[1], 'r') as file:
+    lineno = 0
+    for line in file.readlines():
+        line = line.strip()
+        for match in symbolRe.finditer(line):
+            column = match.span()[0]
+            print("SELECT number FROM gear_index WHERE minX <= %d AND %d <= maxX and minY <= %d AND %d <= maxY;" % (lineno, lineno, column, column))
+        lineno += 1

@@ -1,0 +1,8 @@
+#!/bin/bash
+
+exec ./solution $1 |
+    sqlite3 :memory: |
+    jq -r 'select(2 == (. | length)) |
+    @text "\(.[0].number) \(.[1].number) * p"' |
+    dc |
+    awk '{t += $1} END {print t}'
